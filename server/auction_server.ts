@@ -38,9 +38,18 @@ const server = app.listen(8000, "localhost", () => {
 });
 
 const wsServer = new Server({port: 8085});
-wsServer.on('connection', (websocket) => {
-  websocket.send("这个消息是服务器主动推送的");
+wsServer.on('connection', (websocket) => { // 当连接的时候
+  websocket.send("这个消息是服务器主动推送的");   // 发送一个消息
   websocket.on("message", (message) => {
     console.log('接收到消息' + message);
   })
 });
+let count = 0;
+setInterval(() => {
+  if (wsServer.clients) { // 判断是否有客户端连接着
+    wsServer.clients.forEach(client => { // 循环所有的客户端进行一个消息推送
+      count++;
+      client.send("这是定时推送第" + count + "条");
+    })
+  }
+}, 2000);
