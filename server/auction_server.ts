@@ -55,8 +55,10 @@ app.get('/api/products', (req, res) => {
   if (params.price && result.length > 0) {
     result = result.filter((p) => p.price <= parseInt(params.price));
   }
-  if (params.category !== '-1' && result.length > 0) {
-    result = result.filter((p) => p.categories.indexOf(params.category) !== -1);
+  if (params.category && result.length > 0) {
+    if (params.category !== '-1') {
+      result = result.filter((p) => p.categories.indexOf(params.category) !== -1);
+    }
   }
   res.json(result);
 });
