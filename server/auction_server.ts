@@ -75,19 +75,42 @@ const server = app.listen(8000, "localhost", () => {
   console.log("服务器已经启动，地址是：http://localhost:8000");
 });
 
+const subscriptions = new Map<any, number[]>();
+
 const wsServer = new Server({port: 8085});
 wsServer.on('connection', (websocket) => { // 当连接的时候
-  websocket.send("这个消息是服务器主动推送的");   // 发送一个消息
-  websocket.on("message", (message) => {
-    console.log('接收到消息' + message);
+  // websocket.send("这个消息是服务器主动推送的");   // 发送一个消息
+  websocket.on("message", (message: string) => {
+    let messageObj = JSON.parse(message);
+    let productIds = subscriptions.get(websocket) || [];
+    subscriptions.set(websocket, [...productIds, messageObj.productId]);
   })
 });
+const currentBids = new Map<number, number>();
 let count = 0;
-setInterval(() => {
-  if (wsServer.clients) { // 判断是否有客户端连接着
+let peddengFun = setInterval(() => {
+  /* if (wsServer.clients) { // 判断是否有客户端连接着
     wsServer.clients.forEach(client => { // 循环所有的客户端进行一个消息推送
       count++;
       client.send("这是定时推送第" + count + "条");
     })
-  }
+  } */
+  products.forEach( product => {
+    let currentBid = currentBids.get(product.id) || product.price;
+    let newBid = currentBid + Math.random() * 5;
+    currentBids.set(product.id, newBid);
+  });
+  subscriptions.forEach((productIds: number[], ws) => {
+    if (ws.readyState === 1) {
+      let newBids = productIds.map( productId => ({
+        productId: productId,
+        bid: currentBids.get(productId)
+      }));
+      ws.send(JSON.stringify(newBids));
+    } else {
+      subscriptions.delete(ws);
+    }
+  })
 }, 2000);
+
+
