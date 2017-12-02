@@ -84,37 +84,33 @@ wsServer.on('connection', (websocket) => { // 当连接的时候
     let messageObj = JSON.parse(message);
     let productIds = subscriptions.get(websocket) || [];
     subscriptions.set(websocket, [...productIds, messageObj.productId]);
-    peddengData();
   })
 });
 const currentBids = new Map<number, number>();
 // let count = 0;
-function peddengData() {
-  let peddengFun = setInterval(() => {
-    /* if (wsServer.clients) { // 判断是否有客户端连接着
-      wsServer.clients.forEach(client => { // 循环所有的客户端进行一个消息推送
-        count++;
-        client.send("这是定时推送第" + count + "条");
-      })
-    } */
-    products.forEach( product => {
-      let currentBid = currentBids.get(product.id) || product.price;
-      let newBid = currentBid + Math.random() * 5;
-      currentBids.set(product.id, newBid);
-    });
-    subscriptions.forEach((productIds: number[], ws) => {
-      if (ws.readyState === 1) {
-        let newBids = productIds.map( productId => ({
-          productId: productId,
-          bid: currentBids.get(productId)
-        }));
-        ws.send(JSON.stringify(newBids));
-      } else {
-        subscriptions.delete(ws);
-        clearInterval(peddengFun);
-      }
+setInterval(() => {
+  /* if (wsServer.clients) { // 判断是否有客户端连接着
+    wsServer.clients.forEach(client => { // 循环所有的客户端进行一个消息推送
+      count++;
+      client.send("这是定时推送第" + count + "条");
     })
-  }, 2000);
-}
+  } */
+  products.forEach( product => {
+    let currentBid = currentBids.get(product.id) || product.price;
+    let newBid = currentBid + Math.random() * 5;
+    currentBids.set(product.id, newBid);
+  });
+  subscriptions.forEach((productIds: number[], ws) => {
+    if (ws.readyState === 1) {
+      let newBids = productIds.map( productId => ({
+        productId: productId,
+        bid: currentBids.get(productId)
+      }));
+      ws.send(JSON.stringify(newBids));
+    } else {
+      subscriptions.delete(ws);
+    }
+  })
+}, 2000);
 
 
