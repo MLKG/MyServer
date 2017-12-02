@@ -1,5 +1,6 @@
-import * as express from 'express';
+import * as express from "express";
 import { Server } from "ws";
+import * as path from "path";
 
 const app = express();
 export class Product {
@@ -42,9 +43,10 @@ const comments: Comment[] = [
   new Comment(8, 5, '2017-05-05 22:22:26', '张九', 3, '宝贝非常可以'),
   new Comment(9, 3, '2017-05-05 22:22:26', '张十', 2, '宝贝可以')
 ];
-app.get('/', (req, res) => {
+/*app.get('/', (req, res) => {
   res.send("Hello Express");
-});
+});*/
+app.use('/', express.static(path.join(__dirname, '..', 'dist')));
 
 app.get('/api/products', (req, res) => {
   let result = products;
